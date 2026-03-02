@@ -1,7 +1,6 @@
 {
   "name": "club-studios-bot",
   "version": "1.0.0",
-  "description": "Bot oficial de Club Studios con IA",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
