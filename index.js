@@ -1,7 +1,22 @@
 require("dotenv").config();
+const express = require("express");
 const { Client, GatewayIntentBits } = require("discord.js");
 const OpenAI = require("openai");
 
+// ====== SERVIDOR WEB (para Render) ======
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.get("/", (req, res) => {
+  res.send("Bot funcionando 24/7 🚀");
+});
+
+app.listen(PORT, () => {
+  console.log(`🌐 Servidor web activo en puerto ${PORT}`);
+});
+// =========================================
+
+// ====== DISCORD ======
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -27,7 +42,7 @@ client.on("guildMemberAdd", (member) => {
 
   canal.send(
     `👋 Bienvenido ${member} a Club Studios 🔥
-Prepárate para eventos, noticias y mucho más 🚀`
+Prepárate para eventos y noticias 🚀`
   );
 });
 
@@ -36,12 +51,6 @@ client.on("messageCreate", async (message) => {
 
   if (!levels[message.author.id]) levels[message.author.id] = 0;
   levels[message.author.id]++;
-
-  if (levels[message.author.id] === 25) {
-    message.channel.send(
-      `🌟 ${message.author} subió de nivel por su actividad 🔥`
-    );
-  }
 
   if (message.content.startsWith("!hola")) {
     const mencionado = message.mentions.users.first();
@@ -55,14 +64,6 @@ client.on("messageCreate", async (message) => {
         `👋 Hola ${message.author.username} (${message.author.tag}) 🔥`
       );
     }
-  }
-
-  if (message.content === "!info") {
-    message.channel.send(
-      `👤 Nombre: ${message.author.username}
-🏷 Tag: ${message.author.tag}
-⭐ Nivel: ${levels[message.author.id]}`
-    );
   }
 
   if (message.mentions.has(client.user)) {
@@ -88,6 +89,7 @@ client.on("messageCreate", async (message) => {
       });
 
       message.reply(respuesta.choices[0].message.content);
+
     } catch (error) {
       console.error(error);
       message.reply("⚠️ Error al conectar con la IA.");
