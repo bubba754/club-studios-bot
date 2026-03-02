@@ -1,11 +1,10 @@
 require("dotenv").config();
 const express = require("express");
 const { Client, GatewayIntentBits } = require("discord.js");
-const OpenAI = require("openai");
 
-// ====== SERVIDOR WEB (para Render) ======
+// ====== SERVIDOR WEB (Render 24/7) ======
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 
 app.get("/", (req, res) => {
   res.send("Bot funcionando 24/7 🚀");
@@ -14,7 +13,6 @@ app.get("/", (req, res) => {
 app.listen(PORT, () => {
   console.log(`🌐 Servidor web activo en puerto ${PORT}`);
 });
-// =========================================
 
 // ====== DISCORD ======
 const client = new Client({
@@ -24,10 +22,6 @@ const client = new Client({
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildMembers,
   ],
-});
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
 });
 
 const levels = {};
@@ -41,59 +35,44 @@ client.on("guildMemberAdd", (member) => {
   if (!canal) return;
 
   canal.send(
-    `👋 Bienvenido ${member} a Club Studios 🔥
-Prepárate para eventos y noticias 🚀`
+    `👋 Bienvenido ${member} a **Club Studios** 🔥\nDisfruta tu estadía 🚀`
   );
 });
 
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
 
+  // ===== Sistema de niveles =====
   if (!levels[message.author.id]) levels[message.author.id] = 0;
   levels[message.author.id]++;
 
+  // ===== Comando !hola =====
   if (message.content.startsWith("!hola")) {
     const mencionado = message.mentions.users.first();
 
     if (mencionado) {
-      message.channel.send(
-        `👋 ${message.author.username} saluda a ${mencionado.username} 💙`
+      return message.channel.send(
+        `👋 ${message.author.username} saluda a ${mencionado} 💙`
       );
     } else {
-      message.channel.send(
-        `👋 Hola ${message.author.username} (${message.author.tag}) 🔥`
+      return message.channel.send(
+        `👋 Hola ${message.author} 🔥 Bienvenido a Club Studios`
       );
     }
   }
 
-  if (message.mentions.has(client.user)) {
-    try {
-      const pregunta = message.content.replace(
-        `<@${client.user.id}>`,
-        ""
-      );
+  // ===== Comando !nivel =====
+  if (message.content === "!nivel") {
+    return message.channel.send(
+      `📊 ${message.author} tienes ${levels[message.author.id]} mensajes enviados.`
+    );
+  }
 
-      const respuesta = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content:
-              "Eres el asistente oficial de Club Studios. Responde amigable y profesional.",
-          },
-          {
-            role: "user",
-            content: pregunta,
-          },
-        ],
-      });
-
-      message.reply(respuesta.choices[0].message.content);
-
-    } catch (error) {
-      console.error(error);
-      message.reply("⚠️ Error al conectar con la IA.");
-    }
+  // ===== Comando !info =====
+  if (message.content === "!info") {
+    return message.channel.send(
+      `🤖 Soy el bot oficial de Club Studios.\nComandos disponibles:\n!hola\n!nivel\n!info`
+    );
   }
 });
 
